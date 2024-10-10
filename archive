@@ -1,0 +1,146 @@
+#st.image("data/images/body.jpeg", use_column_width=True)
+
+# create body map with hover points
+body_image = plt.imread("data/images/body.jpeg") # Load the body image
+fig, ax = plt.subplots() # Create a figure and axes
+#plt.style.use('_mpl-gallery')
+ax.imshow(body_image) # Display the image
+
+# Define the coordinates of the organ points
+brain_x, brain_y = 550, 150
+lung_x, lung_y = 450, 650
+breast_x, breast_y = 750, 800
+liver_x, liver_y = 500, 880
+pancreas_x, pancreas_y = 650, 1000
+
+# Plot the organ points on the image
+points = ax.plot([brain_x, lung_x, breast_x, liver_x, pancreas_x], 
+                 [brain_y, lung_y, breast_y, liver_y, pancreas_y], 
+                 'ro', markersize=10, alpha=0.5)
+
+ax.axis('off')
+
+# Display the image with the points
+st.pyplot(fig)
+
+
+import plotly.graph_objects as go
+
+# Define the coordinates of the organ points
+brain_x, brain_y = 550, 150
+lung_x, lung_y = 450, 650
+breast_x, breast_y = 750, 800
+liver_x, liver_y = 500, 880
+pancreas_x, pancreas_y = 650, 1000
+
+# Create a scatter plot with hover text
+fig = go.Figure(data=go.Scatter(
+    x=[brain_x, lung_x, breast_x, liver_x, pancreas_x],
+    y=[brain_y, lung_y, breast_y, liver_y, pancreas_y],
+    mode='markers',
+    marker=dict(
+        size=20,
+        color='red',
+        opacity=0.5
+    ),
+    hovertext=[
+        'Brain Cancer',
+        'Lung Cancer',
+        'Breast Cancer',
+        'Liver Cancer',
+        'Pancreas Cancer'
+    ],
+    hovertemplate="<b>%{hovertext}</b><br><br>" +
+                  "<b>Description:</b> %{text[0]}<br>" +
+                  "<b>Subtypes:</b> %{text[1]}<br>" +
+                  "<b>Survival Case:</b> %{text[2]}<br>" +
+                  "<b>Age Distribution:</b> %{text[3]}<br>" +
+                  "<b>Gender Distribution:</b> %{text[4]}",
+    text=[
+        cancer_data.get('Brain Cancer', {}).get('description', ''),
+        cancer_data.get('Lung Cancer', {}).get('description', ''),
+        cancer_data.get('Breast Cancer', {}).get('description', ''),
+        cancer_data.get('Liver Cancer', {}).get('description', ''),
+        cancer_data.get('Pancreas Cancer', {}).get('description', '')
+    ]
+))
+
+# Read the image file
+with open("data/images/body.jpeg", "rb") as f:
+    image_data = f.read()
+
+# Encode the image data as base64
+image_base64 = base64.b64encode(image_data).decode("utf-8")
+
+fig.update_layout(
+    title="Cancer Visualization Web App",
+    hovermode='closest',
+    images=[dict(
+        source="data/image/jpeg;base64," + image_base64,
+        xref="x",
+        yref="y",
+        x=0,
+        y=0,
+        sizex=1,
+        sizey=1,
+        sizing="stretch",
+        opacity=1,
+        layer="below"
+    )],
+    xaxis=dict(visible=False),
+    yaxis=dict(visible=False),
+    showlegend=False
+)
+
+# Display the plot
+st.plotly_chart(fig)
+
+
+import streamlit as st
+from bokeh.plotting import figure
+from bokeh.models import ColumnDataSource, HoverTool
+from bokeh.io import curdoc
+
+
+
+
+# Ensure the correct version of Bokeh is installed
+# pip install bokeh==2.4.3
+
+# Load your image
+image_path = 'https://img.freepik.com/premium-vector/transparent-human-silhouette-with-organs-liver-spleen-heart-stomach-kidneys-lungs-intestines-front-view-isolated-black-background_212889-4409.jpg?w=1380'
+# Prepare your data (example)
+data = {
+    'x_values': [1, 2, 3, 4, 5],
+    'y_values': [6, 7, 2, 4, 5],
+    'metadata': ['A', 'B', 'C', 'D', 'E']
+}
+
+# Create a ColumnDataSource from your data
+source = ColumnDataSource(data=data)
+
+# Create a new plot with specific dimensions
+p = figure(x_range=(0, 10), y_range=(0, 10))
+
+# Add the image to the plot using the image_url glyph
+p.image_url(url=image_path, x=0, y=1, w=10, h=10, anchor="bottom_left")
+
+# Add scatter points on top of the image
+p.scatter('x_values', 'y_values', size=20, color="navy", source=source)
+
+# Create a hover tool
+hover = HoverTool()
+hover.tooltips = [
+    ("Index", "$index"),
+    ("(x,y)", "($x, $y)"),
+    ("Metadata", "@metadata")
+]
+
+# Add the hover tool to the plot
+p.add_tools(hover)
+
+# Ensure the plot is added to the current document
+curdoc().add_root(p)
+
+# Display the Bokeh plot in Streamlit
+st.bokeh_chart(p, use_container_width=True)
